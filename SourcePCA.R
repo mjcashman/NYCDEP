@@ -7,10 +7,10 @@ rm(list=ls())
 title <- "Raw Values"
 mix.filename <- "Y:/Access Databases/Catskills/Fingerprinting/TargetSamples_NDisRL_useMe.csv"
 target<-read.csv(mix.filename) %>%
-  mutate(Type = "ISCO") %>%
-  select(-Basin)
+  mutate(Type = "ISCO") 
 source.filename <- "Y:/Access Databases/Catskills/Fingerprinting/SourceSamples_noRoad.csv"
-source<-read.csv(source.filename)
+source<-read.csv(source.filename) %>%
+  select(-Trib)
 data<-rbind(source,target)
 
 # Load Size and Organic corrected target and source data
@@ -23,14 +23,17 @@ data<-rbind(source,target)
   # data<-rbind(source,target)
 
 #Alter Groups to combine lacustrine and alluvium
-data <- data %>%
+source <- source %>%
   mutate(Type=recode(Type, "Upper_Lacustrine" = "Lacustrine",
                      "Lower_Lacustrine" = "Lacustrine",
                      "Bank_Alluvium" = "Alluvium",
                      "Terrace_Alluvium" = "Alluvium"))
 
-groups <- data[, 2]
-rownames(data) <- data[, 2]
+groups <- source %>%
+  unite("Type_Basin", c("Type","Basin"))
+groups <- groups[,2]
+basin <- source[,2]
+type <- source[,3]
 
 
 # Plot the data-----
@@ -38,7 +41,7 @@ rownames(data) <- data[, 2]
 ##Apply PCA ----
 # apply PCA - scale. = TRUE is highly 
 # advisable, but default is FALSE. 
-pca <- prcomp(data[,3:56], center = TRUE, scale. = TRUE)
+pca <- prcomp(source[,6:59], center = TRUE, scale. = TRUE)
 plot(pca, type = "l")
 
 #Version 1 w/ggbiplot
@@ -57,21 +60,24 @@ ggbiplot(pca, choices=c(1,2),obs.scale = 1, var.scale = 1,
 
 #Version2 Factoextra
 library(ade4)
-res.pca <- dudi.pca(data[,3:56],
+res.pca <- dudi.pca(source[,6:59],
                     scannf = FALSE,   # Hide scree plot
                     nf = 5 )           # Number of components kept in the results
 
 fviz_eig(res.pca)
 
 fviz_pca_ind(res.pca,
-             col.ind = groups, # Color by the group
-             axes = c(2, 3),
+             col.ind = groups,
+             habillage = groups,
+             axes = c(1, 2),
              geom = c("point"),
              addEllipses = TRUE,
              ellipse.type = "confidence",
              legend.title= "Groups",
+             palette = "lancet",
              #gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)     # Avoid text overlapping
+             repel = TRUE)+ # Avoid text overlapping
+  scale_shape_manual(values = c(15,17,15,17,15,17,15,17,15,17,15,17))
 
 
 fviz_pca_var(res.pca,
@@ -80,7 +86,7 @@ fviz_pca_var(res.pca,
              repel = TRUE )    # Avoid text overlapping
 
 
-fviz_pca_biplot(res.pca, repel = TRUE,
+fviz_pca_biplot(res.pca, repel = FALSE,
                 geom = c("point"),
                 addEllipses = TRUE,
                 ellipse.type = "confidence",
