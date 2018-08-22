@@ -19,7 +19,7 @@ Runlist <- c("8.8.18.Auto.AllCorrect.NoBasinDiff.noRoad_groupedSource",
 )
 
 #Individual
-#Runlist <-  "8.15.18.Auto.NoOrgCorrect.NoBasinDiff.noRoad.ULoutlierremoved_individSource"
+Run <-  "8.9.18.Auto.NoOrgCorrect.NoBasinDiff.noRoad.ULoutlierremoved_groupedSource"
 
 #Loop for grouped source results----
 for (i in seq(Runlist)){
